@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/DariiaLeliukh/tinyapp/issues"
   },
-  "homepage": "https://github.com/DariiaLeliukh/tinyapp#readme"
+  "homepage": "https://github.com/DariiaLeliukh/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
