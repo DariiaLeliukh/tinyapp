@@ -30,7 +30,11 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const tryGetUsername = req.cookies['username'];
+  const templateVars = {
+    username: tryGetUsername ? tryGetUsername : null,
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.post("/urls/:id/delete", (req, res) => {
@@ -77,6 +81,11 @@ app.post("/urls", (req, res) => {
 });
 app.post("/login", (req, res) => {
   res.cookie('username', req.body.username);
+  res.redirect(`/urls`);
+});
+app.post("/logout", (req, res) => {
+
+  res.clearCookie('username');
   res.redirect(`/urls`);
 });
 

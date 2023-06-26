@@ -13,26 +13,26 @@
     <div class="container">
       <h1>Your short URLs</h1>
       <div class="row mb-2 mt-4 align-items-center">
-        <div class="col-4 h5">Short ID</div>
-        <div class="col-4 h5">Long URL</div>
-        <div class="col-2"></div>
-        <div class="col-2"></div>
+        <div class="col-4 col-md-4 h5">Short ID</div>
+        <div class="col-8 col-md-4 h5">Long URL</div>
+        <div class="col-6 col-md-2"></div>
+        <div class="col-6 col-md-2"></div>
       </div>
       <% for(const key in urls) { %>
         <div class="align-items-center border-bottom py-3 row">
 
-          <div class="col-4">
+          <div class="col-4 col-md-4">
             <a href="http://localhost:8080/urls/<%= key %>">
               <%= key %>
             </a>
           </div>
-          <div class="col-4">
+          <div class="col-8 col-md-4">
             (<%= urls[key] %>)
           </div>
-          <div class="col-2">
-            <a href="http://localhost:8080/urls/<%= key %>" class="btn btn-light">Edit</a>
+          <div class="col-6 col-md-2">
+            <a href="http://localhost:8080/urls/<%= key %>" class="btn btn-outline-primary">Edit</a>
           </div>
-          <div class="col-2">
+          <div class="col-6 col-md-2">
             <form method="POST" action="/urls/<%= key %>/delete"><button class="btn btn-warning"
                 type="submit">Delete</button></form>
           </div>
@@ -40,7 +40,7 @@
         <% } %>
 
     </div>
-
+    <%- include('partials/_footer') %>
 </body>
 
 </html>
