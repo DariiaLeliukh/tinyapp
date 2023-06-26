@@ -1,5 +1,7 @@
 const express = require("express");
+const cookieParser = require('cookie-parser')
 const app = express();
+app.use(cookieParser());
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
@@ -17,7 +19,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const tryGetUsername = req.cookies['username'];
+
+  const templateVars = {
+    urls: urlDatabase,
+    username: tryGetUsername ? tryGetUsername : null,
+  };
 
   res.render("urls_index", templateVars);
 });
@@ -40,10 +47,17 @@ app.post("/urls/:id/edit", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   if (urlDatabase.hasOwnProperty(req.params.id)) {
-    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+    const templateVars = {
+      id: req.params.id,
+      longURL: urlDatabase[req.params.id],
+      username: req.cookies["username"]
+    };
     res.render("urls_show", templateVars);
   } else {
-    const templateVars = { searchedValue: req.params.id };
+    const templateVars = {
+      searchedValue: req.params.id,
+      username: req.cookies["username"]
+    };
     res.status(404).render("404", templateVars);
   }
 
