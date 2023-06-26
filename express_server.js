@@ -26,10 +26,14 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.post("/urls/:id/delete", (req, res) => {
+  const idToDelete = req.params.id;
+  delete urlDatabase[idToDelete];
+  res.redirect(`/urls`);
+});
+
 app.get("/urls/:id", (req, res) => {
   if (urlDatabase.hasOwnProperty(req.params.id)) {
-    console.log(urlDatabase[req.params.id]);
-
     const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
     res.render("urls_show", templateVars);
   } else {
@@ -38,6 +42,8 @@ app.get("/urls/:id", (req, res) => {
   }
 
 });
+
+
 
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
