@@ -31,6 +31,12 @@ app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[idToDelete];
   res.redirect(`/urls`);
 });
+app.post("/urls/:id/edit", (req, res) => {
+  const urlId = req.params.id;
+  const newUrl = req.body.longURL
+  urlDatabase[urlId] = newUrl;
+  res.redirect(`/urls`);
+});
 
 app.get("/urls/:id", (req, res) => {
   if (urlDatabase.hasOwnProperty(req.params.id)) {
