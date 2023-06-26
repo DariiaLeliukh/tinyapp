@@ -27,8 +27,16 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
-  res.render("urls_show", templateVars);
+  if (urlDatabase.hasOwnProperty(req.params.id)) {
+    console.log(urlDatabase[req.params.id]);
+
+    const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+    res.render("urls_show", templateVars);
+  } else {
+    const templateVars = { searchedValue: req.params.id };
+    res.status(404).render("404", templateVars);
+  }
+
 });
 
 app.post("/urls", (req, res) => {
@@ -39,10 +47,14 @@ app.post("/urls", (req, res) => {
   }
   urlDatabase[shortURL] = longURL;
 
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  res.redirect(`/urls/${shortURL}`);
+  //res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
-
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
