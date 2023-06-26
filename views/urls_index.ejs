@@ -9,26 +9,27 @@
 </head>
 
 <body>
-  <h1>Your short URLs</h1>
+  <%- include ('partials/_header') %>
+    <h1>Your short URLs</h1>
 
-  <div class="container">
-    <% for(const key in urls) { %>
-      <div class="row"> <!-- url is an array where 0 is key and 1 is full url-->
-        <div class="col-4">
-          <a href="http://localhost:8080/urls/<%= key %>" target="_blank">http://localhost:8080/<%= key %></a>
+    <div class="container">
+      <% for(const key in urls) { %>
+        <div class="row"> <!-- url is an array where 0 is key and 1 is full url-->
+          <div class="col-4">
+            <a href="http://localhost:8080/urls/<%= key %>" target="_blank">http://localhost:8080/<%= key %></a>
+          </div>
+          <div class="col-4">
+            (<%= urls[key] %>)
+          </div>
+          <div class="col-2">
+            <a href="#" class="button">Edit</a>
+          </div>
+          <div class="col-2">
+            <a href="#" class="button">Delete</a>
+          </div>
         </div>
-        <div class="col-4">
-          (<%= urls[key] %>)
-        </div>
-        <div class="col-2">
-          <a href="#" class="button">Edit</a>
-        </div>
-        <div class="col-2">
-          <a href="#" class="button">Delete</a>
-        </div>
-      </div>
-      <% } %>
-  </div>
+        <% } %>
+    </div>
 
 </body>
 
