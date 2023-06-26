@@ -60,7 +60,10 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = longURL;
 
   res.redirect(`/urls/${shortURL}`);
-  //res.send("Ok"); // Respond with 'Ok' (we will replace this)
+});
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect(`/urls`);
 });
 
 app.get("/u/:id", (req, res) => {
