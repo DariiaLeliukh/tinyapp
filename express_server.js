@@ -89,20 +89,37 @@ app.post("/urls", (req, res) => {
 
   res.redirect(`/urls/${shortURL}`);
 });
+
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies["user_id"]] || null,
+  };
+  res.render("login", templateVars);
+})
 app.post("/login", (req, res) => {
-  // res.cookie('username', req.body.username);
+  const { email, password } = req.body;
+
+  const foundUser = getUserByEmail(email, users);
+
+  if (!foundUser || foundUser.password !== password) {
+    res.status(403).send("Invalid creadentials");
+  }
+
+  res.cookie('user_id', foundUser.id);
   res.redirect(`/urls`);
 });
+
 app.post("/logout", (req, res) => {
 
   res.clearCookie('user_id');
-  res.redirect(`/urls`);
+  res.redirect(`/login`);
 });
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
+
 app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]] || null,
@@ -134,12 +151,7 @@ app.post("/register", (req, res) => {
   }
 });
 
-app.get("/login", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user_id"]] || null,
-  };
-  res.render("login", templateVars);
-})
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
