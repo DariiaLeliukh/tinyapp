@@ -90,7 +90,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  // res.cookie('username', req.body.username);
   res.redirect(`/urls`);
 });
 app.post("/logout", (req, res) => {
@@ -133,6 +133,13 @@ app.post("/register", (req, res) => {
     res.status(400).send("Not enough credentials were provided. Something went wrong");
   }
 });
+
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies["user_id"]] || null,
+  };
+  res.render("login", templateVars);
+})
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
