@@ -9,9 +9,23 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
+  "b2xVn2": {
+    longUrl: "http://www.lighthouselabs.ca",
+    userId: "userRandomID"
+  },
+  "9sm5xK": {
+    longUrl: "http://www.google.com",
+    userId: "user2RandomID"
+  },
+  "df458r": {
+    longUrl: "http://www.youtube.com",
+    userId: "userRandomID"
+  },
+  "sgq3y6": {
+    longUrl: "http://www.youtube.com",
+    userId: "user2RandomID"
+  }
+}
 
 const users = {
   userRandomID: {
@@ -34,67 +48,121 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies['user_id']] || null,
-  };
-
-  res.render("urls_index", templateVars);
+  if (req.cookies['user_id']) {
+    const templateVars = {
+      urls: urlsForUser(req.cookies['user_id']),
+      user: users[req.cookies['user_id']] || null,
+    };
+    res.render("urls_index", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies['user_id']] || null,
-  };
-  res.render("urls_new", templateVars);
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  } else {
+    const templateVars = {
+      user: users[req.cookies['user_id']] || null,
+    };
+    res.render("urls_new", templateVars);
+  }
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  const idToDelete = req.params.id;
-  delete urlDatabase[idToDelete];
-  res.redirect(`/urls`);
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  } else {
+    const idToDelete = req.params.id;
+    /*
+     logged in user can delete only his URLs.
+     test: curl -X POST -i --cookie "user_id=userRandomID" localhost:8080/urls/sgq3y6/delete
+    */
+    if (urlDatabase[idToDelete].userId === req.cookies["user_id"]) {
+      delete urlDatabase[idToDelete];
+      res.redirect(`/urls`);
+    } else {
+      res.send("You can't delete this URL. Please, check permissions.\n");
+    }
+  }
 });
 app.post("/urls/:id/edit", (req, res) => {
-  const urlId = req.params.id;
-  const newUrl = req.body.longURL
-  urlDatabase[urlId] = newUrl;
-  res.redirect(`/urls`);
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  } else {
+    const urlToEdit = req.params.id;
+    /*
+     logged in user can edit only his URLs.
+     test: curl -X POST -i --data "longURL=something" --cookie "user_id=userRandomID" localhost:8080/urls/df458r/edit
+    */
+    if (urlDatabase[urlToEdit].userId === req.cookies["user_id"]) {
+      const newUrl = {
+        longUrl: req.body.longURL,
+        userId: req.cookies["user_id"]
+      };
+      urlDatabase[urlToEdit] = newUrl;
+      res.redirect(`/urls`);
+    } else {
+      res.send("You are not allowed to edit this url.\n");
+    }
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
-  if (urlDatabase.hasOwnProperty(req.params.id)) {
-    const templateVars = {
-      id: req.params.id,
-      longURL: urlDatabase[req.params.id],
-      user: users[req.cookies["user_id"]]
-    };
-    res.render("urls_show", templateVars);
-  } else {
-    const templateVars = {
-      searchedValue: req.params.id,
-      user: users[req.cookies["user_id"]]
-    };
-    res.status(404).render("404", templateVars);
-  }
+  if (req.cookies['user_id']) {
+    if (urlDatabase.hasOwnProperty(req.params.id)) {
+      if (urlDatabase[req.params.id].userId === req.cookies['user_id']) {
+        const templateVars = {
+          id: req.params.id,
+          longURL: urlDatabase[req.params.id].longUrl,
+          user: users[req.cookies["user_id"]]
+        };
+        res.render("urls_show", templateVars);
+      } else {
+        res.send("You are not allowed to see this page");
+      }
 
+    } else {
+      const templateVars = {
+        searchedValue: req.params.id,
+        user: users[req.cookies["user_id"]]
+      };
+      res.status(404).render("404", templateVars);
+    }
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.post("/urls", (req, res) => {
-  const longURL = req.body.longURL;
-  let shortURL = generateRandomString();
-  while (urlDatabase.hasOwnProperty(shortURL)) {
-    shortURL = generateRandomString();
+  if (!req.cookies["user_id"]) {
+    res.send("You are not allowed to add new URLs without being logged in.");
+  } else {
+    const longUrl = req.body.longURL;
+    const userId = req.cookies["user_id"];
+    let shortUrl = generateRandomString();
+    while (urlDatabase.hasOwnProperty(shortUrl)) {
+      shortUrl = generateRandomString();
+    }
+    urlDatabase[shortUrl] = {
+      longUrl,
+      userId
+    };
+    res.redirect(`/urls/${shortUrl}`);
   }
-  urlDatabase[shortURL] = longURL;
-
-  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user_id"]] || null,
-  };
-  res.render("login", templateVars);
+  if (req.cookies["user_id"]) {
+    res.redirect("/urls");
+  } else {
+    const templateVars = {
+      user: users[req.cookies["user_id"]] || null,
+    };
+    res.render("login", templateVars);
+  }
+
 })
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
@@ -115,17 +183,27 @@ app.post("/logout", (req, res) => {
   res.redirect(`/login`);
 });
 
+// TODO: check that this doesn't work for non URL instances
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  if (!urlDatabase[req.params.id]) {
+    res.send("Such URL does not exist in the system");
+  } else {
+    const longUrlToRedirect = urlDatabase[req.params.id].longUrl;
+    res.redirect(longUrlToRedirect);
+  }
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user_id"]] || null,
-  };
-  res.render("registration", templateVars);
+  if (req.cookies["user_id"]) {
+    res.redirect("/urls");
+  } else {
+    const templateVars = {
+      user: users[req.cookies["user_id"]] || null,
+    };
+    res.render("registration", templateVars);
+  }
 });
+
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
   if (email && password) {
@@ -176,4 +254,33 @@ function getUserByEmail(email, users) {
     }
   }
   return null;
+}
+
+/*
+  Filter out only those URLs that are assigned to a specific user
+  Input:
+    id - user_id passed from the cookie from a logged n user
+  Output:
+    object filled with URL keys and their values OR empty object
+    Example:
+    {
+      "b2xVn2": {
+        longUrl: "http://www.lighthouselabs.ca",
+        userId: "userRandomID"
+      },
+      "9sm5xK": {
+        longUrl: "http://www.google.com",
+        userId: "user2RandomID"
+      },
+    }
+*/
+function urlsForUser(id) {
+  const clearedUrlsDB = {};
+  for (const urlID in urlDatabase) {
+    console.log(urlDatabase[urlID]);
+    if (urlDatabase[urlID].userId === id) {
+      clearedUrlsDB[urlID] = urlDatabase[urlID];
+    }
+  }
+  return clearedUrlsDB;
 }
