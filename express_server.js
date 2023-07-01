@@ -193,6 +193,8 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
+  // TODO: make check to have full URL that starts with http or https
+  // with non-URLs the redirect fails
   if (!urlDatabase[req.params.id]) {
     res.send("Such URL does not exist in the system");
   } else {
