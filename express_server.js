@@ -2,6 +2,7 @@ const express = require("express");
 const cookieSession = require('cookie-session');
 const morgan = require("morgan");
 const bcrypt = require("bcryptjs");
+const getUserByEmail = require('./helpers');
 const app = express();
 app.use(morgan("dev"));
 const PORT = 8080; // default port 8080
@@ -263,29 +264,6 @@ function generateRandomString() {
     counter += 1;
   }
   return result;
-}
-
-/*
-  Get user by email if exists, otherwise return null
-  Input:
-    email - the associated email we are looking for
-    users - object with different users
-  Output
-    user object. Example: 
-      {
-        id: "userRandomID",
-        email: "user@example.com",
-        password: "purple-monkey-dinosaur",
-      }
-    OR null if user not found
-*/
-function getUserByEmail(email, users) {
-  for (const id in users) {
-    if (users[id].email === email) {
-      return users[id];
-    }
-  }
-  return null;
 }
 
 /*
