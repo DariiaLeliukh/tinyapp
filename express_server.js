@@ -172,10 +172,10 @@ app.post("/login", (req, res) => {
 
   if (!foundUser || !bcrypt.compareSync(password, foundUser.password)) {
     res.status(403).send("Invalid creadentials");
+  } else {
+    res.cookie('user_id', foundUser.id);
+    res.redirect(`/urls`);
   }
-
-  res.cookie('user_id', foundUser.id);
-  res.redirect(`/urls`);
 });
 
 app.post("/logout", (req, res) => {
