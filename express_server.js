@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
 const morgan = require("morgan");
+const bcrypt = require("bcryptjs");
 const app = express();
 app.use(cookieParser());
 app.use(morgan("dev"));
@@ -31,12 +32,12 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10),
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: bcrypt.hashSync("dishwasher-funk", 10),
   },
 };
 
@@ -169,7 +170,7 @@ app.post("/login", (req, res) => {
 
   const foundUser = getUserByEmail(email, users);
 
-  if (!foundUser || foundUser.password !== password) {
+  if (!foundUser || !bcrypt.compareSync(password, foundUser.password)) {
     res.status(403).send("Invalid creadentials");
   }
 
@@ -206,7 +207,11 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = {
+    email: req.body.email,
+    password: bcrypt.hashSync(req.body.password, 10)
+  };
+
   if (email && password) {
     const foundUser = getUserByEmail(email, users);
     if (foundUser) {
@@ -297,7 +302,6 @@ function getUserByEmail(email, users) {
 function urlsForUser(id) {
   const clearedUrlsDB = {};
   for (const urlID in urlDatabase) {
-    console.log(urlDatabase[urlID]);
     if (urlDatabase[urlID].userId === id) {
       clearedUrlsDB[urlID] = urlDatabase[urlID];
     }
